@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
 } from 'lucide-react';
-import { useUIStore } from '../../../zustand/useUIStore';
+import { useUIStore } from '../../../zustand/features/uistore/useUIStore';
 
 const Sidebar: React.FC = () => {
     const { isSidebarOpen, setSidebarOpen } = useUIStore();

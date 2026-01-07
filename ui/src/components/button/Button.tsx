@@ -28,7 +28,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             rightIcon: RightIcon,
             children,
             fullWidth = false,
-            className = '',
             disabled,
             ...props
         },
@@ -37,7 +36,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
         const widthStyle = fullWidth ? 'w-full' : '';
 
-        const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${className}`;
+        const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle}`;
 
         return (
             <button
@@ -59,7 +58,5 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         );
     }
 );
-
-Button.displayName = 'Button';
 
 export default Button;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { UIState } from './UIStore.models';
+import type { UIState } from './UIStore.types';
 
 export const useUIStore = create<UIState>((set) => ({
     isSidebarOpen: false,
