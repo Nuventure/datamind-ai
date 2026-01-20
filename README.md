@@ -59,7 +59,6 @@ This is a community-driven project. check [TODO.md](./TODO.md) to see the progre
 - Python 3.10+
 - Node.js 18+
 - MongoDB
-- Google Gemini API Key
 
 ### Backend Setup
 1. **Navigate to the core directory**:
@@ -77,8 +76,7 @@ This is a community-driven project. check [TODO.md](./TODO.md) to see the progre
      ```
    - Open `.env` and add your keys:
      - `MONGO_URI`: Your MongoDB connection string.
-     - `GEMINI_API_KEY`: **Required**. Get your free API key from [Google AI Studio](https://aistudio.google.com/).
-     > ⚠️ **Note**: Never commit your `.env` file or API keys to GitHub!
+
 
 4. **Run the Server**:
    ```bash

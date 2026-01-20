@@ -1,50 +1,18 @@
 # 📐 DataMind AI - Technical Specifications
 
-This document outlines the detailed architecture, data schemas, and component designs for DataMind AI. Contributors should use this as the primary reference when implementing features.
+This document outlines the **architectural blueprint** and **proposed design** for DataMind AI. These specifications guide the implementation of upcoming features.
+
+> **Status**: DRAFT (Planned Implementation)
 
 ## 1. 📡 API Contracts
 
-### Data Analysis Endpoint
+### Proposed: Data Analysis Endpoint
 **POST** `/ai/analyze`
-- **Input**: `{"filename": "data-uuid.csv"}`
-- **Output Schema**:
-```json
-{
-  "summary": {
-    "columns": ["Date", "Temperature", "Vibration"],
-    "dtypes": {"Date": "datetime", "Temperature": "float"},
-    "shape": [1000, 3],
-    "summary_stats": { ... },
-    "null_counts": { ... }
-  },
-  "config": {
-    "title": "Temperature Trends over Time",
-    "chart_type": "line",
-    "aggregation": {
-      "groupby": "Date",
-      "function": "mean",
-      "column": "Temperature"
-    },
-    "anomaly_detection": {
-      "column": "Temperature",
-      "method": "isolation_forest",
-      "threshold": 0.05
-    },
-    "key_insights": [
-      "Temperature spikes correlate with high Vibration."
-    ]
-  },
-  "data": [
-    // Aggregated data points for the chart
-    {"Date": "2023-01-01", "Temperature": 45.2},
-    {"Date": "2023-01-02", "Temperature": 46.1}
-  ],
-  "anomalies": [
-    // Raw rows identified as anomalies
-    {"Date": "2023-01-15", "Temperature": 89.5, "Vibration": 10.2}
-  ]
-}
-```
+- **Goal**: To accept a file reference and return an AI-generated analysis.
+- **Planned Output**: A JSON object containing:
+  - **Summary**: Statistical overview of the data.
+  - **Config**: Visualization rules (chart type, axes, aggregation).
+  - **Insights**: Textual analysis from the LLM.
 
 ## 2. 💻 Frontend Architecture (React + Zustand)
 
