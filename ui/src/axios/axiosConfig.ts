@@ -1,8 +1,9 @@
 import axios from "axios";
+import { BASE_URL } from "./endpoints/endpoints";
 
 // Create axios instance with default config
 export const apiClient = axios.create({
-  baseURL: "https://jsonplaceholder.typicode.com", // Your API base URL
+  baseURL: BASE_URL, // Your API base URL
   timeout: 10000, // 10 seconds
   headers: {
     "Content-Type": "application/json",
@@ -26,7 +27,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - handle errors globally
@@ -40,5 +41,5 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
