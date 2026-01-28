@@ -1,10 +1,20 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import MainLayout from './components/layout/MainLayout';
-import Dashboard from './pages/Dashboard';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import MainLayout from "./components/layout/MainLayout";
+import Dashboard from "./pages/Dashboard/ui/Dashboard";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     children: [
       {
@@ -15,8 +25,15 @@ const router = createBrowserRouter([
   },
 ]);
 
+import { Toaster } from "react-hot-toast";
+
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <Toaster position="top-right" reverseOrder={false} />
+    </QueryClientProvider>
+  );
 }
 
 export default App;
