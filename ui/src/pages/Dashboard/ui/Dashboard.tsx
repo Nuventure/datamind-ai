@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Upload,
-  FileText,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import Button from "../../../components/button/Button";
 import { useFileUpload } from "../hooks/useFileUpload";
 
@@ -13,10 +7,13 @@ import {
   UPLOAD_MESSAGES,
   VALID_FILE_TYPES,
 } from "../constants/dashboard.constants";
+import { STATUS_CONFIG } from "../constants/dashboard.status";
 
 const Dashboard: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const { uploadStatus, errorMessage, onFileChange, onDrop } = useFileUpload();
+
+  const currentStatus = STATUS_CONFIG[uploadStatus] || STATUS_CONFIG.idle;
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto space-y-8 pb-12">
@@ -59,25 +56,11 @@ const Dashboard: React.FC = () => {
                             `}
             >
               <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-blue-500">
-                {uploadStatus === "uploading" ? (
-                  <Loader2 size={32} className="animate-spin" />
-                ) : uploadStatus === "success" ? (
-                  <CheckCircle2 size={32} className="text-green-500" />
-                ) : uploadStatus === "error" ? (
-                  <AlertCircle size={32} className="text-red-500" />
-                ) : (
-                  <FileText size={32} />
-                )}
+                {currentStatus.icon}
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-slate-700">
-                  {uploadStatus === "uploading"
-                    ? UPLOAD_MESSAGES.UPLOADING
-                    : uploadStatus === "success"
-                      ? UPLOAD_MESSAGES.UPLOAD_SUCCESS
-                      : uploadStatus === "error"
-                        ? UPLOAD_MESSAGES.UPLOAD_FAILED
-                        : UPLOAD_MESSAGES.DRAG_DROP_HINT}
+                  {currentStatus.text}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
                   {errorMessage || UPLOAD_MESSAGES.FILE_SPEC_HINT}
