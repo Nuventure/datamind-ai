@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
 import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard/ui/Dashboard";
 
@@ -24,8 +25,6 @@ const router = createBrowserRouter([
     ],
   },
 ]);
-
-import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
