@@ -10,7 +10,7 @@ import {
 import { STATUS_CONFIG } from "../constants/dashboard.status";
 
 const Dashboard: React.FC = () => {
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const { uploadStatus, errorMessage, onFileChange, onDrop } = useFileUpload();
 
   const currentStatus = STATUS_CONFIG[uploadStatus] || STATUS_CONFIG.idle;

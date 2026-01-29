@@ -2,7 +2,10 @@ import { useState, useCallback } from "react";
 
 import toast from "react-hot-toast";
 import axios from "axios";
-import type { UploadStatus } from "../models/dashboard.types";
+import type {
+  UploadStatus,
+  UseFileUploadReturn,
+} from "../models/dashboard.types";
 import { telemetryApiService } from "../../../axios/api/telemetryApiService";
 import {
   VALID_FILE_TYPES,
@@ -10,7 +13,7 @@ import {
   UPLOAD_MESSAGES,
 } from "../constants/dashboard.constants";
 
-export const useFileUpload = () => {
+export const useFileUpload = (): UseFileUploadReturn => {
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

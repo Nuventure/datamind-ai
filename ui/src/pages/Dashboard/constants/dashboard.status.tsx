@@ -1,7 +1,8 @@
 import { FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { UPLOAD_MESSAGES } from "./dashboard.constants";
+import type { UploadStatus, StatusItem } from "../models/dashboard.types";
 
-export const STATUS_CONFIG = {
+export const STATUS_CONFIG: Record<UploadStatus, StatusItem> = {
   uploading: {
     icon: <Loader2 size={32} className="animate-spin" />,
     text: UPLOAD_MESSAGES.UPLOADING,
