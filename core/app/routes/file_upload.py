@@ -1,8 +1,10 @@
 import os
 import uuid
 from fastapi import APIRouter, UploadFile, File
-from fastapi.responses import JSONResponse
-from app.services.file_upload_service import save_uploaded_file
+from fastapi.responses import JSONResponse, FileResponse
+from app.services.file_upload_service import save_uploaded_file, get_uploaded_files, get_file_columns
+from app.services.summary_service import summarize_file_content
+import pandas as pd
 
 router = APIRouter()
 
@@ -27,6 +29,7 @@ async def upload_file(file: UploadFile = File(...)):
     # Save filename to DB
     save_uploaded_file(unique_filename)
 
+
     return JSONResponse(
         content={
             "message": "File uploaded successfully",
@@ -34,3 +37,34 @@ async def upload_file(file: UploadFile = File(...)):
         },
         status_code=200
     )
+@router.get("/get-files")
+def get_files(filename: str = None):
+    """
+    Fetch all uploaded files
+    """
+    files = get_uploaded_files(filename)
+    return JSONResponse(content={"files": files}, status_code=200)
+
+@router.get("/download-file/{filename}")
+def download_file(filename: str):
+    """
+    Download a file by its filename
+    """
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    
+    if not os.path.exists(file_path):
+        return JSONResponse(content={"message": "File not found"}, status_code=404)
+        
+    return FileResponse(path=file_path, filename=filename, media_type='application/octet-stream')
+
+
+@router.get("/get-columns")
+def get_columns(filename: str):
+    """
+    Get column names of the uploaded file
+    """
+    columns = get_file_columns(filename)
+    if not columns:
+         return JSONResponse(content={"error": "File not found or unreadable"}, status_code=404)
+         
+    return JSONResponse(content={"columns": columns}, status_code=200)
