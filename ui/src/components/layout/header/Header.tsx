@@ -1,45 +1,51 @@
-import React from 'react';
-import { Menu, X, User } from 'lucide-react';
-import { useUIStore } from '../../../zustand/features/uistore/useUIStore';
-import Button from '../../button/Button';
+import React from "react";
+import { Database, Sparkles } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const Header: React.FC = () => {
-    const { isSidebarOpen, toggleSidebar } = useUIStore();
+  const location = useLocation();
+  const showAnalysisInfo = location.pathname === "/analysis";
 
-    return (
-        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-4 shadow-sm sm:px-6 lg:px-8">
-            <div className="flex items-center gap-4">
-                <div className="lg:hidden">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={toggleSidebar}
-                        title="Open sidebar"
-                    >
-                        {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                    </Button>
-                </div>
-                <div className="flex items-center lg:hidden">
-                    <span className="text-xl font-bold text-blue-600">DataMind AI</span>
-                </div>
+  return (
+    <header
+      className={`sticky top-0 z-40 flex h-14 shrink-0 w-full items-center justify-between border-b border-neutral-800 bg-black pl-6 ${
+        showAnalysisInfo ? "pr-0" : "pr-6"
+      }`}
+    >
+      {/* Left - Logo */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-blue-500/20 rounded-lg">
+          <Database className="w-5 h-5 text-blue-400" />
+        </div>
+        <div>
+          <h1 className="text-base font-semibold text-white">
+            Data Mind <span className="text-slate-500 font-normal">v1.0</span>
+          </h1>
+        </div>
+      </div>
+
+      {/* Right - Data Health & AI Insights (only on analysis screen) */}
+      {showAnalysisInfo && (
+        <div className="flex h-full items-center">
+          <div className="flex items-center gap-2 mr-6">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#111] rounded-full border border-neutral-800/50">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+              <span className="text-sm font-medium text-slate-300">
+                Data Health: 94/100
+              </span>
             </div>
+          </div>
 
-            <div className="flex items-center gap-4">
-
-                <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-                    <div className="hidden text-right sm:block">
-                        <p className="text-sm font-medium text-gray-900">John Doe</p>
-                        <p className="text-xs text-gray-500">Admin</p>
-                    </div>
-                    <Button
-                        variant="ghost"
-                    >
-                        <User className="h-6 w-6" />
-                    </Button>
-                </div>
-            </div>
-        </header>
-    );
+          <div className="flex h-full w-80 items-center gap-2 border-l border-neutral-800 px-6">
+            <Sparkles className="w-4 h-4 text-white" />
+            <span className="text-sm font-medium text-white">
+              AI Cognitive Insights
+            </span>
+          </div>
+        </div>
+      )}
+    </header>
+  );
 };
 
 export default Header;
