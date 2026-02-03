@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, FileText, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "../../../components/button/Button";
 import { useFileUpload } from "../hooks/useFileUpload";
 
@@ -11,80 +12,132 @@ import { STATUS_CONFIG } from "../constants/dashboard.status";
 
 const Dashboard: React.FC = () => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const { uploadStatus, errorMessage, onFileChange, onDrop } = useFileUpload();
+  const {
+    uploadStatus,
+    errorMessage,
+    selectedFile,
+    uploadFile,
+    onFileChange,
+    onDrop,
+    resetStatus,
+  } = useFileUpload();
+  const navigate = useNavigate();
 
   const currentStatus = STATUS_CONFIG[uploadStatus] || STATUS_CONFIG.idle;
 
+  // Watch for success status and redirect
+  React.useEffect(() => {
+    if (uploadStatus === "success") {
+      navigate("/analysis");
+    }
+  }, [uploadStatus, navigate]);
+
+  // Handle file change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onFileChange(e);
+  };
+
+  // Handle drop
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    setIsDragging(false);
+    onDrop(e);
+  };
+
   return (
-    <div className="p-6 max-w-[1600px] mx-auto space-y-8 pb-12">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-          Telemetry Overview
-        </h1>
-        <p className="text-slate-500">
-          Upload and monitor device telemetry data in real-time.
-        </p>
-      </header>
+    <div className="min-h-full flex items-center justify-center p-6 text-white">
+      <div className="w-full max-w-2xl">
+        {/* Upload Card */}
+        <div className=" backdrop-blur-sm rounded-2xl p-8 ">
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className={`
+              relative border-2 border-dashed rounded-xl p-12 flex flex-col items-center justify-center gap-4 transition-all duration-200
+              ${
+                isDragging
+                  ? "border-blue-400 bg-blue-500/10 scale-[1.02]"
+                  : "border-slate-600 hover:border-slate-500 bg-slate-800/30"
+              }
+              ${
+                uploadStatus === "uploading"
+                  ? "opacity-50 pointer-events-none"
+                  : ""
+              }
+            `}
+          >
+            {!selectedFile ? (
+              <>
+                <div className="p-4 rounded-2xl bg-slate-700/50 text-slate-400">
+                  {currentStatus.icon}
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-slate-300">
+                    {currentStatus.text}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {errorMessage || UPLOAD_MESSAGES.FILE_SPEC_HINT}
+                  </p>
+                </div>
+                <div className="mt-2 relative">
+                  <Button leftIcon={Upload}>
+                    {UPLOAD_MESSAGES.SELECT_FILE}
+                  </Button>
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    accept={VALID_FILE_TYPES.join(",")}
+                    onChange={handleFileChange}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="p-4 rounded-2xl bg-blue-500/20 text-blue-400">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-medium text-white">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    {(selectedFile.size / 1024).toFixed(2)} KB
+                  </p>
+                  {errorMessage && (
+                    <p className="text-sm text-red-500 mt-2 bg-red-500/10 py-1 px-3 rounded-md border border-red-500/20 inline-block">
+                      {errorMessage}
+                    </p>
+                  )}
+                </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Upload & History */}
-        <div className="lg:col-span-4 space-y-8">
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 ring-1 ring-slate-900/5 hover:shadow-md transition-all duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-50 rounded-xl text-blue-600">
-                <Upload size={20} />
-              </div>
-              <h2 className="text-xl font-semibold text-slate-800">
-                Upload Telemetry
-              </h2>
-            </div>
+                <div className="flex items-center gap-3 mt-4">
+                  <Button
+                    onClick={uploadFile}
+                    leftIcon={
+                      uploadStatus === "uploading" ? Loader2 : undefined
+                    }
+                    disabled={uploadStatus === "uploading"}
+                    className={
+                      uploadStatus === "uploading" ? "cursor-wait" : ""
+                    }
+                  >
+                    {uploadStatus === "uploading" ? "Uploading..." : "Submit"}
+                  </Button>
 
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setIsDragging(true);
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => {
-                setIsDragging(false);
-                onDrop(e);
-              }}
-              className={`
-                                relative border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center gap-4 transition-all duration-200
-                                ${isDragging ? "border-blue-400 bg-blue-50/50 scale-[1.02]" : "border-slate-200 hover:border-blue-300 bg-slate-50/30"}
-                                ${uploadStatus === "uploading" ? "opacity-50 pointer-events-none" : ""}
-                            `}
-            >
-              <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-blue-500">
-                {currentStatus.icon}
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-slate-700">
-                  {currentStatus.text}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  {errorMessage || UPLOAD_MESSAGES.FILE_SPEC_HINT}
-                </p>
-              </div>
-              <div className="mt-2 relative">
-                <Button
-                  leftIcon={uploadStatus === "uploading" ? Loader2 : Upload}
-                  fullWidth
-                  disabled={uploadStatus === "uploading"}
-                >
-                  {uploadStatus === "uploading"
-                    ? UPLOAD_MESSAGES.UPLOADING
-                    : UPLOAD_MESSAGES.SELECT_FILE}
-                </Button>
-                <input
-                  type="file"
-                  className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  accept={VALID_FILE_TYPES.join(",")}
-                  onChange={onFileChange}
-                  disabled={uploadStatus === "uploading"}
-                />
-              </div>
-            </div>
+                  <Button
+                    variant="outline"
+                    onClick={resetStatus}
+                    disabled={uploadStatus === "uploading"}
+                    leftIcon={X}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
