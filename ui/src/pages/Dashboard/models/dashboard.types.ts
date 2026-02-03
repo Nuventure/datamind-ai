@@ -10,7 +10,9 @@ export interface StatusItem {
 export interface UseFileUploadReturn {
   uploadStatus: UploadStatus;
   errorMessage: string | null;
-  handleFileUpload: (file: File) => Promise<void>;
+  selectedFile: File | null;
+  uploadFile: () => Promise<void>;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  resetStatus: () => void;
 }
