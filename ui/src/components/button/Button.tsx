@@ -1,62 +1,66 @@
-import { forwardRef } from 'react';
-import type { ButtonProps, ButtonVariant, ButtonSize } from './Button.models';
+import { forwardRef } from "react";
+import { Loader2 } from "lucide-react";
+import type { ButtonProps, ButtonVariant, ButtonSize } from "./Button.models";
 
 const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm focus:ring-blue-500',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
-    outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
-    ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm focus:ring-red-500',
-    success: 'bg-green-600 text-white hover:bg-green-700 shadow-sm focus:ring-green-500',
+  primary:
+    "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 border-b-2 border-blue-700 hover:border-blue-600",
+  secondary:
+    "bg-slate-800/80 text-white backdrop-blur-sm border border-slate-700/50 hover:bg-slate-700/80 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 shadow-lg shadow-black/20",
+  outline:
+    "border-2 border-slate-700 bg-transparent text-slate-300 hover:border-blue-500/50 hover:bg-blue-500/10 hover:text-white hover:-translate-y-0.5 active:translate-y-0 active:scale-95",
+  ghost:
+    "text-slate-400 hover:bg-slate-800/50 hover:text-white transition-colors duration-200",
+  danger:
+    "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30 hover:shadow-red-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 border-b-2 border-red-700 hover:border-red-600",
+  success:
+    "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 border-b-2 border-emerald-700 hover:border-emerald-600",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-    xs: 'px-2.5 py-1.5 text-xs',
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-4 py-2 text-base',
-    xl: 'px-6 py-3 text-base font-semibold',
+  xs: "px-3 py-1.5 text-xs font-medium rounded-lg",
+  sm: "px-4 py-2 text-sm font-medium rounded-lg",
+  md: "px-6 py-2.5 text-sm font-semibold rounded-xl",
+  lg: "px-8 py-3 text-base font-semibold rounded-xl",
+  xl: "px-10 py-4 text-lg font-bold rounded-2xl",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    (
-        {
-            variant = 'primary',
-            size = 'md',
-            isLoading = false,
-            leftIcon: LeftIcon,
-            rightIcon: RightIcon,
-            children,
-            fullWidth = false,
-            disabled,
-            ...props
-        },
-        ref
-    ) => {
-        const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-        const widthStyle = fullWidth ? 'w-full' : '';
+  (
+    {
+      variant = "primary",
+      size = "md",
+      isLoading = false,
+      leftIcon: LeftIcon,
+      rightIcon: RightIcon,
+      children,
+      fullWidth = false,
+      disabled,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
+    const baseStyles =
+      "relative inline-flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:active:scale-100";
+    const widthStyle = fullWidth ? "w-full" : "";
 
-        const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle}`;
+    const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${className || ""}`;
 
-        return (
-            <button
-                ref={ref}
-                disabled={disabled || isLoading}
-                className={combinedClassName}
-                {...props}
-            >
-                {isLoading && (
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                )}
-                {!isLoading && LeftIcon && <LeftIcon className="-ml-1 mr-2 h-4 w-4" />}
-                {children}
-                {!isLoading && RightIcon && <RightIcon className="ml-2 -mr-1 h-4 w-4" />}
-            </button>
-        );
-    }
+    return (
+      <button
+        ref={ref}
+        disabled={disabled || isLoading}
+        className={`${combinedClassName} gap-2`}
+        {...props}
+      >
+        {isLoading && <Loader2 className="animate-spin h-5 w-5" />}
+        {!isLoading && LeftIcon && <LeftIcon className="h-5 w-5" />}
+        {children}
+        {!isLoading && RightIcon && <RightIcon className="h-5 w-5" />}
+      </button>
+    );
+  },
 );
 
 export default Button;
