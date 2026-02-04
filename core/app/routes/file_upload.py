@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse
 from app.services.file_upload_service import save_uploaded_file, get_uploaded_files, get_file_columns
-from app.services.summary_service import summarize_file_content
+
 import pandas as pd
 
 router = APIRouter()
