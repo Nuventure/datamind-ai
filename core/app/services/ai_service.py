@@ -60,7 +60,6 @@ def analyze_file(file_path: str) -> dict:
     Loads the file, extracts metadata, and generates a statistical summary.
     """
     try:
-        print(file_path)
         # Try reading as different formats since file extension might be missing
         try:
             df = pd.read_csv(file_path)
@@ -114,7 +113,7 @@ def generate_visualization_rules(analysis_result: dict) -> list:
             f"- 'title': A descriptive title for the chart.\n"
             f"- 'x': The column name for the X-axis.\n"
             f"- 'y': The column name for the Y-axis (if applicable).\n"
-            f"- 'description': A brief explanation of why this chart is useful.\n\n"
+            f"- 'description': A specific insight or analysis of the data based on the provided statistics (e.g., mention range, central tendency, or specific patterns observed), not just a generic description of the chart type.\n\n"
             f"Return ONLY a valid JSON list of these objects. Do not include markdown formatting or explanations outside the JSON."
         )
 
