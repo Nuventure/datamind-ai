@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard/ui/Dashboard";
+import AnalysisDashboard from "./pages/Dashboard/ui/AnalysisDashboard";
 
 const router = createBrowserRouter([
   {
@@ -11,6 +12,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Dashboard />,
+      },
+      {
+        path: "analysis",
+        element: <AnalysisDashboard />,
       },
     ],
   },
