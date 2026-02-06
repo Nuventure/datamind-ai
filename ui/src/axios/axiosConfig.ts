@@ -4,7 +4,7 @@ import { BASE_URL } from "./endpoints/endpoints";
 // Create axios instance with default config
 export const apiClient = axios.create({
   baseURL: BASE_URL, // Your API base URL
-  timeout: 10000, // 10 seconds
+  timeout: 60000, // 60 seconds - increased for LLM API calls
   headers: {
     "Content-Type": "application/json",
   },

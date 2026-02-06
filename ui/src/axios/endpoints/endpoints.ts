@@ -4,4 +4,9 @@ export const Endpoints = {
   sheets: {
     upload: "/sheets/upload-file",
   },
+  analysis: {
+    summary: (filename: string) => `/analysis/${filename}`,
+    rules: (filename: string) => `/analysis/${filename}/rules`,
+    insights: (filename: string) => `/analysis/${filename}/insights`,
+  },
 };

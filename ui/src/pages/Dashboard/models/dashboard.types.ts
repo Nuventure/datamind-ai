@@ -11,6 +11,7 @@ export interface UseFileUploadReturn {
   uploadStatus: UploadStatus;
   errorMessage: string | null;
   selectedFile: File | null;
+  uploadedFileName: string | null;
   uploadFile: () => Promise<void>;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
