@@ -3,6 +3,7 @@ import { Upload, Loader2, FileText, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/button/Button";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { useFileStore } from "../../../zustand/features/fileStore";
 
 import {
   UPLOAD_MESSAGES,
@@ -20,17 +21,20 @@ const Dashboard: React.FC = () => {
     onFileChange,
     onDrop,
     resetStatus,
+    uploadedFileName,
   } = useFileUpload();
   const navigate = useNavigate();
+  const { setUploadedFile } = useFileStore();
 
   const currentStatus = STATUS_CONFIG[uploadStatus] || STATUS_CONFIG.idle;
 
   // Watch for success status and redirect
   React.useEffect(() => {
-    if (uploadStatus === "success") {
-      navigate("/analysis");
+    if (uploadStatus === "success" && uploadedFileName) {
+      setUploadedFile(uploadedFileName);
+      navigate("/summary");
     }
-  }, [uploadStatus, navigate]);
+  }, [uploadStatus, uploadedFileName, navigate, setUploadedFile]);
 
   // Handle file change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
