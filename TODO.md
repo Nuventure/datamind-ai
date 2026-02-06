@@ -31,5 +31,7 @@ If you complete a task, please open a PR to mark it as `✅ Completed`.
 | Implement Anomaly Detection Logic            | ⬜ Todo      |               |
 | **Phase 3: Visualization**                   |              |               |
 | Detailed Analysis Page                       | ✅ Completed | @JayaKrishna  |
+| Summary Page UI                              | ✅ Completed | @JayaKrishna  |
+| AI Insights API Integration                  | ✅ Completed | @JayaKrishna  |
 | Generic Chart Renderer Component             | ⬜ Todo      |               |
 | Anomaly Highlighting in UI                   | ⬜ Todo      |               |
