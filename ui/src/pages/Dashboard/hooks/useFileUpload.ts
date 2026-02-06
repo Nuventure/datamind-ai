@@ -16,6 +16,7 @@ export const useFileUpload = (): UseFileUploadReturn => {
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   const handleFileSelection = useCallback((file: File) => {
     if (!file) return;
@@ -47,7 +48,9 @@ export const useFileUpload = (): UseFileUploadReturn => {
     const loadingToast = toast.loading(UPLOAD_MESSAGES.UPLOADING);
 
     try {
-      await telemetryApiService.uploadTelemetryFile(selectedFile);
+      const response =
+        await telemetryApiService.uploadTelemetryFile(selectedFile);
+      setUploadedFileName(response.file_name);
       setUploadStatus("success");
       toast.success(UPLOAD_MESSAGES.UPLOAD_SUCCESS, { id: loadingToast });
     } catch (error: unknown) {
@@ -88,12 +91,14 @@ export const useFileUpload = (): UseFileUploadReturn => {
     setUploadStatus("idle");
     setErrorMessage(null);
     setSelectedFile(null);
+    setUploadedFileName(null);
   }, []);
 
   return {
     uploadStatus,
     errorMessage,
     selectedFile,
+    uploadedFileName,
     uploadFile,
     onFileChange,
     onDrop,
