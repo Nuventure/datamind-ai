@@ -4,6 +4,7 @@ import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard/ui/Dashboard";
 import SummaryPage from "./pages/Dashboard/ui/SummaryPage";
 import AnalysisDashboard from "./pages/Dashboard/ui/AnalysisDashboard";
+import NotFound from "./pages/NotFound";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
       {
         path: "analysis",
         element: <AnalysisDashboard />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },

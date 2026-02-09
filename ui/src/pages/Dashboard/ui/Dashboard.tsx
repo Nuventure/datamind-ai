@@ -24,16 +24,27 @@ const Dashboard: React.FC = () => {
     uploadedFileName,
   } = useFileUpload();
   const navigate = useNavigate();
-  const { setUploadedFile } = useFileStore();
+  const { setUploadedFile, clearUploadedFile } = useFileStore();
+
+  // Clear uploaded file when returning to Dashboard
+  React.useEffect(() => {
+    clearUploadedFile();
+  }, [clearUploadedFile]);
 
   const currentStatus = STATUS_CONFIG[uploadStatus] || STATUS_CONFIG.idle;
 
   // Watch for success status and redirect
+  const prevStatus = React.useRef(uploadStatus);
   React.useEffect(() => {
-    if (uploadStatus === "success" && uploadedFileName) {
+    if (
+      uploadStatus === "success" &&
+      prevStatus.current !== "success" &&
+      uploadedFileName
+    ) {
       setUploadedFile(uploadedFileName);
       navigate("/summary");
     }
+    prevStatus.current = uploadStatus;
   }, [uploadStatus, uploadedFileName, navigate, setUploadedFile]);
 
   // Handle file change
