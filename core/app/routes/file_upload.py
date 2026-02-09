@@ -28,12 +28,12 @@ def process_file_background(filename: str, file_path: str):
         # Update DB
         update_file_analysis(filename, analysis_result)
         print(f"Background analysis completed for {filename}.")
-        return
+        return True
         
     except Exception as e:
         print(f"Error in background processing for {filename}: {e}")
         update_file_analysis(filename, {"error": str(e)}, status="failed")
-        return
+        return False
 
 @router.post("/upload-file")
 async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
