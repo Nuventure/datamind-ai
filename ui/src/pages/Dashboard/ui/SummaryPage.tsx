@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -8,6 +8,7 @@ import {
   TrendingUp,
   AlertTriangle,
   BarChart3,
+  Maximize2,
 } from "lucide-react";
 import Button from "../../../components/button/Button";
 import { useFileStore } from "../../../zustand/features/fileStore";
@@ -20,6 +21,19 @@ const SummaryPage: React.FC = () => {
   const { uploadedFileName, uploadedAt } = useFileStore();
   const { isLoading, error, parsedSummary, rawData, aiInsights } =
     useSummaryAnalysis(uploadedFileName);
+
+  // Width control state
+  const [maxWidth, setMaxWidth] = useState<"7xl" | "8xl">("8xl");
+
+  const widthOptions = [
+    { value: "7xl" as const, label: "Wide", className: "max-w-7xl" },
+    { value: "8xl" as const, label: "Full", className: "max-w-8xl" },
+  ];
+
+  const getWidthClass = () => {
+    const option = widthOptions.find((opt) => opt.value === maxWidth);
+    return option?.className || "max-w-8xl";
+  };
 
   // Get top values for categorical columns
   const getTopValues = () => {
@@ -95,16 +109,42 @@ const SummaryPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-sm font-medium text-emerald-400">
-            {SUMMARY_PAGE_LABELS.ANALYSIS_COMPLETE}
-          </span>
+        <div className="flex items-center gap-3">
+          {/* Width Control */}
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
+            <Maximize2 className="w-3.5 h-3.5 text-slate-400" />
+            <div className="relative flex bg-slate-900/50 rounded-md p-0.5">
+              {widthOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setMaxWidth(option.value)}
+                  className={`relative px-3 py-1 text-xs font-medium rounded transition-all duration-200 ${
+                    maxWidth === option.value
+                      ? "text-white"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {maxWidth === option.value && (
+                    <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 rounded shadow-lg" />
+                  )}
+                  <span className="relative z-10">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-sm font-medium text-emerald-400">
+              {SUMMARY_PAGE_LABELS.ANALYSIS_COMPLETE}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div
+        className={`${getWidthClass()} mx-auto space-y-8 transition-all duration-300`}
+      >
         {/* DataMind Insights Card */}
         <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-6">
           {/* Header */}
