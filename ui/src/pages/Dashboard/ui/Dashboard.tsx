@@ -24,7 +24,12 @@ const Dashboard: React.FC = () => {
     uploadedFileName,
   } = useFileUpload();
   const navigate = useNavigate();
-  const { setUploadedFile } = useFileStore();
+  const { setUploadedFile, clearUploadedFile } = useFileStore();
+
+  // Clear uploaded file when returning to Dashboard
+  React.useEffect(() => {
+    clearUploadedFile();
+  }, [clearUploadedFile]);
 
   const currentStatus = STATUS_CONFIG[uploadStatus] || STATUS_CONFIG.idle;
 
