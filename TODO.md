@@ -28,7 +28,7 @@ If you complete a task, please open a PR to mark it as `✅ Completed`.
 | Add Pandas & Scikit-Learn Dependencies       | ⬜ Todo      |               |
 | Implement `ai_service` (Metadata Extraction) | ⬜ Todo      |               |
 | Implement LLM Rule Generation                | ⬜ Todo      |               |
-| Implement Anomaly Detection Logic            | ⬜ Todo      |               |
+| Implement Anomaly Detection Logic            | ✅ Completed | @adhuldasmk   |
 | **Phase 3: Visualization**                   |              |               |
 | Detailed Analysis Page                       | ✅ Completed | @JayaKrishna  |
 | Summary Page UI                              | ✅ Completed | @JayaKrishna  |

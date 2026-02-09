@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
-from app.services.ai_service import analyze_file, generate_visualization_rules, generate_ai_insights
+from app.services.ai_service import analyze_file, generate_visualization_rules, generate_ai_insights, detect_anomalies, load_dataframe
 import os
 
 router = APIRouter()
@@ -67,6 +67,30 @@ def generate_insights_endpoint(filename: str):
         insights = generate_ai_insights(analysis_result)
         
         return JSONResponse(content=insights, status_code=200)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/analysis/{filename}/anomalies")
+def detect_anomalies_endpoint(filename: str):
+    """
+    Triggers the statistical anomaly detection on the uploaded file.
+    Returns indices and values of detected anomalies.
+    """
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    try:
+        # Load the dataframe using the shared service function
+        df = load_dataframe(file_path)
+        
+        # Detect anomalies
+        anomalies = detect_anomalies(df)
+        
+        return JSONResponse(content=anomalies, status_code=200)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import json
+from sklearn.ensemble import IsolationForest
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from dotenv import load_dotenv
@@ -54,26 +55,35 @@ def generate_statistical_summary(df: pd.DataFrame) -> dict:
         
     return summary
 
+def load_dataframe(file_path: str) -> pd.DataFrame:
+    """
+    Loads a file into a Pandas DataFrame. Supports CSV, Excel, and JSON.
+    """
+    try:
+        try:
+            df = pd.read_csv(file_path)
+            # Basic validation to ensure it's a valid CSV (has columns)
+            if df.empty and len(df.columns) == 0:
+                 raise ValueError("Empty CSV")
+            return df
+        except Exception:
+            try:
+                return pd.read_excel(file_path)
+            except Exception:
+                try:
+                    return pd.read_json(file_path)
+                except Exception:
+                    raise ValueError("Unsupported file format or unable to read file")
+    except Exception as e:
+        raise e
+
 def analyze_file(file_path: str) -> dict:
     """
     Orchestrates the analysis of a file.
     Loads the file, extracts metadata, and generates a statistical summary.
     """
     try:
-        # Try reading as different formats since file extension might be missing
-        try:
-            df = pd.read_csv(file_path)
-            # Basic validation to ensure it's a valid CSV (has columns)
-            if df.empty and len(df.columns) == 0:
-                 raise ValueError("Empty CSV")
-        except Exception:
-            try:
-                df = pd.read_excel(file_path)
-            except Exception:
-                try:
-                    df = pd.read_json(file_path)
-                except Exception:
-                    raise ValueError("Unsupported file format or unable to read file")
+        df = load_dataframe(file_path)
 
         metadata = extract_metadata(df)
         summary = generate_statistical_summary(df)
@@ -174,3 +184,54 @@ def generate_ai_insights(analysis_result: dict) -> dict:
         "data_quality": {"score": 0, "alerts": ["Error generating analysis"]},
         "stat_highlights": []
     }
+
+def detect_anomalies(df: pd.DataFrame) -> dict:
+    """
+    Detects anomalies in the DataFrame using Isolation Forest.
+    Returns a dictionary with indices of anomalies and the anomalous data points.
+    Only considers numeric columns for detection.
+    """
+    # Select only numeric columns
+    numeric_df = df.select_dtypes(include=[np.number])
+    
+    if numeric_df.empty:
+        return {"anomalies": [], "count": 0, "message": "No numeric columns found for anomaly detection."}
+        
+    # Handle missing values by filling with mean (simple imputation for this MVP)
+    # IsolationForest does not support NaN values natively in older versions or some implementations
+    numeric_df_clean = numeric_df.fillna(numeric_df.mean())
+    
+    # If still empty (e.g. all NaNs), return empty
+    if numeric_df_clean.empty:
+         return {"anomalies": [], "count": 0, "message": "Not enough data for anomaly detection."}
+
+    # Initialize Isolation Forest
+    # contamination='auto' lets the algorithm determine the threshold
+    clf = IsolationForest(contamination='auto', random_state=42)
+    
+    try:
+        # Fit and predict
+        # -1 indicates anomaly, 1 indicates normal
+        predictions = clf.fit_predict(numeric_df_clean)
+        
+        # Get indices of anomalies
+        # predictions == -1 gives a boolean mask
+        anomaly_indices = np.where(predictions == -1)[0]
+        
+        # Convert to list of standard Python ints for JSON serialization
+        anomaly_indices_list = anomaly_indices.tolist()
+        
+        # Get the actual data points that are anomalous
+        # restricting to numeric columns for the response to highlight *why* it might be anomalous statistically
+        anomalies_data = df.iloc[anomaly_indices].to_dict(orient='records')
+        
+        return {
+            "anomalies": anomalies_data,
+            "indices": anomaly_indices_list,
+            "count": len(anomaly_indices_list),
+            "message": "Anomaly detection successful."
+        }
+        
+    except Exception as e:
+        print(f"Error in anomaly detection: {e}")
+        return {"anomalies": [], "count": 0, "message": f"Error during anomaly detection: {str(e)}"}
