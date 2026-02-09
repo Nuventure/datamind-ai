@@ -4,7 +4,25 @@ import type { FileState } from "../models/fileStore.model";
 export const useFileStore = create<FileState>((set) => ({
   uploadedFileName: null,
   uploadedAt: null,
+  uploadStatus: "idle",
+  errorMessage: null,
+  selectedFile: null,
+
   setUploadedFile: (fileName: string) =>
     set({ uploadedFileName: fileName, uploadedAt: new Date() }),
-  clearUploadedFile: () => set({ uploadedFileName: null, uploadedAt: null }),
+
+  setUploadStatus: (status) => set({ uploadStatus: status }),
+
+  setErrorMessage: (message) => set({ errorMessage: message }),
+
+  setSelectedFile: (file) => set({ selectedFile: file }),
+
+  clearUploadedFile: () =>
+    set({
+      uploadedFileName: null,
+      uploadedAt: null,
+      uploadStatus: "idle",
+      errorMessage: null,
+      selectedFile: null,
+    }),
 }));
