@@ -1,11 +1,9 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import type {
-  UploadStatus,
-  UseFileUploadReturn,
-} from "../models/dashboard.types";
+import type { UseFileUploadReturn } from "../models/dashboard.types";
 import { telemetryApiService } from "../../../axios/api/telemetryApiService";
+import { useFileStore } from "../../../zustand/features/fileStore";
 import {
   VALID_FILE_TYPES,
   FILE_EXTENSIONS_REGEX,
@@ -13,32 +11,41 @@ import {
 } from "../constants/dashboard.constants";
 
 export const useFileUpload = (): UseFileUploadReturn => {
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const {
+    uploadStatus,
+    errorMessage,
+    selectedFile,
+    uploadedFileName,
+    setUploadStatus,
+    setErrorMessage,
+    setSelectedFile,
+    setUploadedFile,
+    clearUploadedFile,
+  } = useFileStore();
 
-  const handleFileSelection = useCallback((file: File) => {
-    if (!file) return;
+  const handleFileSelection = useCallback(
+    (file: File) => {
+      if (!file) return;
 
-    // Validate file type
-    if (
-      !VALID_FILE_TYPES.includes(file.type) &&
-      !file.name.match(FILE_EXTENSIONS_REGEX)
-    ) {
-      setUploadStatus("error");
-      const errorMsg = UPLOAD_MESSAGES.INVALID_FILE_TYPE;
-      setErrorMessage(errorMsg);
-      // toast.error(errorMsg); // Optional: toast on select error? Better just show UI error.
-      setSelectedFile(null);
-      return;
-    }
+      // Validate file type
+      if (
+        !VALID_FILE_TYPES.includes(file.type) &&
+        !file.name.match(FILE_EXTENSIONS_REGEX)
+      ) {
+        setUploadStatus("error");
+        const errorMsg = UPLOAD_MESSAGES.INVALID_FILE_TYPE;
+        setErrorMessage(errorMsg);
+        setSelectedFile(null);
+        return;
+      }
 
-    // Valid file selected
-    setSelectedFile(file);
-    setUploadStatus("idle");
-    setErrorMessage(null);
-  }, []);
+      // Valid file selected
+      setSelectedFile(file);
+      setUploadStatus("idle");
+      setErrorMessage(null);
+    },
+    [setUploadStatus, setErrorMessage, setSelectedFile],
+  );
 
   const uploadFile = useCallback(async () => {
     if (!selectedFile) return;
@@ -50,7 +57,7 @@ export const useFileUpload = (): UseFileUploadReturn => {
     try {
       const response =
         await telemetryApiService.uploadTelemetryFile(selectedFile);
-      setUploadedFileName(response.file_name);
+      setUploadedFile(response.file_name);
       setUploadStatus("success");
       toast.success(UPLOAD_MESSAGES.UPLOAD_SUCCESS, { id: loadingToast });
     } catch (error: unknown) {
@@ -66,7 +73,7 @@ export const useFileUpload = (): UseFileUploadReturn => {
       setErrorMessage(errorMsg);
       toast.error(errorMsg, { id: loadingToast });
     }
-  }, [selectedFile]);
+  }, [selectedFile, setUploadStatus, setErrorMessage, setUploadedFile]);
 
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,11 +95,8 @@ export const useFileUpload = (): UseFileUploadReturn => {
   );
 
   const resetStatus = useCallback(() => {
-    setUploadStatus("idle");
-    setErrorMessage(null);
-    setSelectedFile(null);
-    setUploadedFileName(null);
-  }, []);
+    clearUploadedFile();
+  }, [clearUploadedFile]);
 
   return {
     uploadStatus,
