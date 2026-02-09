@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { analysisApiService } from "../../../axios/api/analysisApiService";
 import type {
   AnalysisSummaryResponse,
@@ -76,38 +77,54 @@ export const useSummaryAnalysis = (
     [],
   );
 
-  const fetchAnalysis = useCallback(async () => {
-    if (!filename) {
-      setError("No filename provided");
-      return;
-    }
+  const fetchAnalysis = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!filename) {
+        setError("No filename provided");
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      // Fetch both summary and AI insights in parallel
-      const [summaryData, insightsData] = await Promise.all([
-        analysisApiService.getAnalysisSummary(filename),
-        analysisApiService.getAIInsights(filename),
-      ]);
+      try {
+        // Fetch both summary and AI insights in parallel
+        const [summaryData, insightsData] = await Promise.all([
+          analysisApiService.getAnalysisSummary(filename, signal),
+          analysisApiService.getAIInsights(filename, signal),
+        ]);
 
-      setRawData(summaryData);
-      setParsedSummary(parseSummaryData(summaryData));
-      setAiInsights(insightsData);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch analysis";
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filename, parseSummaryData]);
+        if (signal?.aborted) return;
+
+        setRawData(summaryData);
+        setParsedSummary(parseSummaryData(summaryData));
+        setAiInsights(insightsData);
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.name === "CanceledError") {
+          return;
+        }
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch analysis";
+        setError(errorMessage);
+      } finally {
+        if (!signal?.aborted) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [filename, parseSummaryData],
+  );
 
   useEffect(() => {
+    const controller = new AbortController();
+
     if (filename) {
-      fetchAnalysis();
+      fetchAnalysis(controller.signal);
     }
+
+    return () => {
+      controller.abort();
+    };
   }, [filename, fetchAnalysis]);
 
   return {

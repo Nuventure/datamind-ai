@@ -10,16 +10,24 @@ export type { AnalysisSummaryResponse, AIInsightsResponse };
 export const analysisApiService = {
   getAnalysisSummary: async (
     filename: string,
+    signal?: AbortSignal,
   ): Promise<AnalysisSummaryResponse> => {
     const { data } = await apiClient.post<AnalysisSummaryResponse>(
       Endpoints.analysis.summary(filename),
+      {},
+      { signal },
     );
     return data;
   },
 
-  getAIInsights: async (filename: string): Promise<AIInsightsResponse> => {
+  getAIInsights: async (
+    filename: string,
+    signal?: AbortSignal,
+  ): Promise<AIInsightsResponse> => {
     const { data } = await apiClient.post<AIInsightsResponse>(
       Endpoints.analysis.insights(filename),
+      {},
+      { signal },
     );
     return data;
   },
