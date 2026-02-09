@@ -4,6 +4,7 @@ from fastapi import APIRouter, UploadFile, File, BackgroundTasks
 from fastapi.responses import JSONResponse, FileResponse
 from app.services.file_upload_service import save_uploaded_file, get_uploaded_files, get_file_columns, update_file_analysis
 from app.services.ai_service import analyze_file
+from app.config import LARGE_FILE_THRESHOLD
 
 
 
@@ -27,10 +28,12 @@ def process_file_background(filename: str, file_path: str):
         # Update DB
         update_file_analysis(filename, analysis_result)
         print(f"Background analysis completed for {filename}.")
+        return
         
     except Exception as e:
         print(f"Error in background processing for {filename}: {e}")
         update_file_analysis(filename, {"error": str(e)}, status="failed")
+        return
 
 @router.post("/upload-file")
 async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
@@ -38,9 +41,8 @@ async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File
     Generate a unique filename: data-sheet-<uuid> and add it into db and folder[apps/uploads]
     Triggers background analysis.
     """
-    # Preserve original extension
-    file_ext = os.path.splitext(file.filename)[1] if file.filename else ""
-    unique_filename = f"data-sheet-{uuid.uuid4().hex[:8]}{file_ext}"
+    # Generate unique filename with original extension
+    unique_filename = f"data-sheet-{uuid.uuid4().hex[:8]}{os.path.splitext(file.filename)[1] if file.filename else ''}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
 
     # Check file size (approximate by reading into memory - careful with RAM)
@@ -53,17 +55,14 @@ async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File
 
     # Save filename to DB (initial record)
     save_uploaded_file(unique_filename)
-    
-    # Add background task
-    background_tasks.add_task(process_file_background, unique_filename, file_path)
 
     # Determine response message based on size
-    # Threshold: 5MB = 5 * 1024 * 1024 bytes
-    LARGE_FILE_THRESHOLD = 5 * 1024 * 1024 
-    
     message = "File uploaded successfully"
     if file_size > LARGE_FILE_THRESHOLD:
         message = "File uploaded. Large file detected, analysis running in background."
+
+    # Add background task
+    background_tasks.add_task(process_file_background, unique_filename, file_path)
 
     return JSONResponse(
         content={
