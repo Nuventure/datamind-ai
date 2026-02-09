@@ -20,6 +20,22 @@ def save_uploaded_file(filename: str):
     db.uploaded_files.insert_one(document)
     return document
 
+def update_file_analysis(filename: str, analysis_result: dict, status: str = "completed"):
+    """
+    Updates the file record with analysis results.
+    """
+    db.uploaded_files.update_one(
+        {"file_path": filename},
+        {
+            "$set": {
+                "analysis": analysis_result,
+                "status": status,
+                "processed_at": pd.Timestamp.now().isoformat()
+            }
+        }
+    )
+
+
 def get_uploaded_files(filename: str = None):
     """
     Get uploaded files from DB
