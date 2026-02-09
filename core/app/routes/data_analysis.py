@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
-from app.services.ai_service import analyze_file, generate_visualization_rules, generate_ai_insights, detect_anomalies, load_dataframe
+from app.services.ai_service import analyze_file, generate_visualization_rules, generate_ai_insights, detect_anomalies, load_dataframe, generate_aggregation_rules, execute_aggregation_rule
 import os
 
 router = APIRouter()
@@ -91,6 +91,53 @@ def detect_anomalies_endpoint(filename: str):
         anomalies = detect_anomalies(df)
         
         return JSONResponse(content=anomalies, status_code=200)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/analysis/{filename}/aggregations/suggest")
+def generate_aggregation_rules_endpoint(filename: str):
+    """
+    Triggers the LLM to suggest Pandas aggregation rules based on file analysis.
+    """
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    try:
+        # First, analyze the file to get stats
+        analysis_result = analyze_file(file_path)
+        
+        # generate rules
+        rules = generate_aggregation_rules(analysis_result)
+        
+        return JSONResponse(content={"rules": rules}, status_code=200)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/analysis/{filename}/aggregations/execute")
+def execute_aggregation_endpoint(filename: str, rule: dict):
+    """
+    Executes a specific aggregation rule on the uploaded file.
+    Expects a JSON body with the rule definition.
+    """
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    try:
+        # Load the dataframe
+        df = load_dataframe(file_path)
+        
+        # Execute the rule
+        result = execute_aggregation_rule(df, rule)
+        
+        return JSONResponse(content=result, status_code=200)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

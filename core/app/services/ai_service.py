@@ -235,3 +235,69 @@ def detect_anomalies(df: pd.DataFrame) -> dict:
     except Exception as e:
         print(f"Error in anomaly detection: {e}")
         return {"anomalies": [], "count": 0, "message": f"Error during anomaly detection: {str(e)}"}
+
+def generate_aggregation_rules(analysis_result: dict) -> list:
+    """
+    Uses Google Gemini to suggest meaningful Pandas aggregation rules based on the analysis result.
+    Returns a list of rule objects, where each rule is:
+    {
+        "title": "Average Temperature per Device",
+        "group_by": ["DeviceID"],
+        "aggregations": {"Temperature": "mean"},
+        "description": "Calculates the average temperature for each device to identify overheating units."
+    }
+    """
+    metadata_str = json.dumps(analysis_result.get("metadata", {}), indent=2)
+    summary_str = json.dumps(analysis_result.get("summary", {}), indent=2)
+
+    prompt_text = (
+        f"You are an expert data analyst. Analyze the following dataset metadata and statistical summary.\n"
+        f"Metadata: {metadata_str}\n"
+        f"Summary: {summary_str}\n\n"
+        f"Suggest 3 to 5 meaningful Pandas aggregation queries that would reveal hidden patterns or insights.\n"
+        f"For each suggestion, provide a JSON object with the following keys:\n"
+        f"- 'title': A short, descriptive title.\n"
+        f"- 'group_by': A list of column names to group by. Choose categorical or discrete columns (e.g., IDs, Status, Location, Date).\n"
+        f"- 'aggregations': A dictionary where keys are column names (numeric) and values are aggregation functions ('mean', 'sum', 'count', 'min', 'max').\n"
+        f"- 'description': A brief explanation of what this aggregation reveals.\n\n"
+        f"Ensure strictly that valid columns are used. Do not group by unique IDs or continuous high-cardinality numeric variables unless they are likely categories (e.g. 'Month').\n"
+        f"Return ONLY a valid JSON list of these objects. No markdown."
+    )
+
+    result = _query_gemini_json(prompt_text)
+    return result if isinstance(result, list) else []
+
+def execute_aggregation_rule(df: pd.DataFrame, rule: dict) -> dict:
+    """
+    Executes a specific aggregation rule on the DataFrame.
+    """
+    try:
+        group_cols = rule.get("group_by", [])
+        aggs = rule.get("aggregations", {})
+        
+        if not group_cols or not aggs:
+             raise ValueError("Invalid rule: missing group_by or aggregations")
+        
+        # Validate columns exist
+        for col in group_cols:
+            if col not in df.columns:
+                 raise ValueError(f"Column '{col}' not found in dataset")
+        for col in aggs.keys():
+             if col not in df.columns:
+                 raise ValueError(f"Column '{col}' not found in dataset")
+
+        # Perform aggregation
+        # reset_index() flattens the result back to a regular DataFrame
+        grouped_df = df.groupby(group_cols).agg(aggs).reset_index()
+        
+        # Convert to dictionary for JSON response (records format is usually best for charts)
+        result_data = grouped_df.to_dict(orient='records')
+        
+        return {
+            "rule": rule,
+            "data": result_data,
+            "count": len(result_data)
+        }
+    except Exception as e:
+        print(f"Error executing aggregation: {e}")
+        raise e
