@@ -1,10 +1,12 @@
 import os
 import uuid
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, BackgroundTasks
 from fastapi.responses import JSONResponse, FileResponse
-from app.services.file_upload_service import save_uploaded_file, get_uploaded_files, get_file_columns
+from app.services.file_upload_service import save_uploaded_file, get_uploaded_files, get_file_columns, update_file_analysis
+from app.services.ai_service import analyze_file
+from app.config import LARGE_FILE_THRESHOLD
 
-import pandas as pd
+
 
 router = APIRouter()
 
@@ -13,27 +15,61 @@ UPLOAD_DIR = "app/uploads"
 # Ensure upload directory exists
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+def process_file_background(filename: str, file_path: str):
+    """
+    Background task to analyze file.
+    """
+    try:
+        print(f"Starting background analysis for {filename}...")
+        
+        # Analyze file (Metadata + Stats)
+        analysis_result = analyze_file(file_path)
+
+        # Update DB
+        update_file_analysis(filename, analysis_result)
+        print(f"Background analysis completed for {filename}.")
+        return True
+        
+    except Exception as e:
+        print(f"Error in background processing for {filename}: {e}")
+        update_file_analysis(filename, {"error": str(e)}, status="failed")
+        return False
+
 @router.post("/upload-file")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """
     Generate a unique filename: data-sheet-<uuid> and add it into db and folder[apps/uploads]
+    Triggers background analysis.
     """
-    unique_filename = f"data-sheet-{uuid.uuid4().hex[:8]}"
+    # Generate unique filename with original extension
+    unique_filename = f"data-sheet-{uuid.uuid4().hex[:8]}{os.path.splitext(file.filename)[1] if file.filename else ''}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
 
-    # Save the uploaded file content to disk
+    # Check file size (approximate by reading into memory - careful with RAM)
+    # Better: read chunks and write.
+    file_size = 0
     with open(file_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
+        while chunk := await file.read(1024 * 1024):  # Read in 1MB chunks
+            file_size += len(chunk)
+            f.write(chunk)
 
-    # Save filename to DB
+    # Save filename to DB (initial record)
     save_uploaded_file(unique_filename)
 
+    # Determine response message based on size
+    message = "File uploaded successfully"
+    if file_size > LARGE_FILE_THRESHOLD:
+        message = "File uploaded. Large file detected, analysis running in background."
+
+    # Add background task
+    background_tasks.add_task(process_file_background, unique_filename, file_path)
 
     return JSONResponse(
         content={
-            "message": "File uploaded successfully",
-            "file_name": unique_filename
+            "message": message,
+            "file_name": unique_filename,
+            "file_size_bytes": file_size,
+            "background_analysis": "started"
         },
         status_code=200
     )

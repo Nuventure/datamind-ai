@@ -20,6 +20,32 @@ def save_uploaded_file(filename: str):
     db.uploaded_files.insert_one(document)
     return document
 
+def update_file_analysis(filename: str, analysis_result: dict, status: str = "completed"):
+    """
+    Updates the file record with analysis results.
+    """
+    if db is None:
+        raise ConnectionError("Database connection is not available")
+    
+    try:
+        result = db.uploaded_files.update_one(
+            {"file_path": filename},
+            {
+                "$set": {
+                    "analysis": analysis_result,
+                    "status": status,
+                    "processed_at": pd.Timestamp.now().isoformat()
+                }
+            }
+        )
+        if result.matched_count == 0:
+            print(f"Warning: No document found with file_path: {filename}")
+        return result
+    except Exception as e:
+        print(f"Database error updating file analysis: {e}")
+        raise
+
+
 def get_uploaded_files(filename: str = None):
     """
     Get uploaded files from DB
