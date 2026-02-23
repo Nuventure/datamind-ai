@@ -1,9 +1,11 @@
 import React from "react";
-import { Database, Sparkles } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Database, Sparkles, Upload } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Button from "../../button/Button";
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const showAnalysisInfo = location.pathname === "/analysis";
 
   return (
@@ -24,26 +26,42 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Right - Data Health & AI Insights (only on analysis screen) */}
-      {showAnalysisInfo && (
-        <div className="flex h-full items-center">
-          <div className="flex items-center gap-2 mr-6">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#111] rounded-full border border-neutral-800/50">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-              <span className="text-sm font-medium text-slate-300">
-                Data Health: 94/100
+      {/* Right Section */}
+      <div className="flex h-full items-center">
+        {/* Upload Button */}
+        <div className={`flex items-center ${showAnalysisInfo ? "mr-6" : ""}`}>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={Upload}
+            onClick={() => navigate("/")}
+            className="border-neutral-700 hover:bg-neutral-800 text-slate-300"
+          >
+            Upload New Data
+          </Button>
+        </div>
+
+        {/* Data Health & AI Insights (only on analysis screen) */}
+        {showAnalysisInfo && (
+          <>
+            <div className="flex items-center gap-2 ml-2 mr-6">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#111] rounded-full border border-neutral-800/50">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                <span className="text-sm font-medium text-slate-300">
+                  Data Health: 94/100
+                </span>
+              </div>
+            </div>
+
+            <div className="flex h-full w-80 items-center gap-2 border-l border-neutral-800 px-6">
+              <Sparkles className="w-4 h-4 text-white" />
+              <span className="text-sm font-medium text-white">
+                AI Cognitive Insights
               </span>
             </div>
-          </div>
-
-          <div className="flex h-full w-80 items-center gap-2 border-l border-neutral-800 px-6">
-            <Sparkles className="w-4 h-4 text-white" />
-            <span className="text-sm font-medium text-white">
-              AI Cognitive Insights
-            </span>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </header>
   );
 };

@@ -1,34 +1,36 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import axios from "axios";
 import { analysisApiService } from "../../../axios/api/analysisApiService";
+import { useAnalysisStore } from "../../../zustand/features/analysisStore";
 import type {
   AnalysisSummaryResponse,
   ParsedSummary,
-  AIInsightsResponse,
   UseSummaryAnalysisReturn,
 } from "../models/summaryPage.models";
 
 export const useSummaryAnalysis = (
   filename: string | null,
 ): UseSummaryAnalysisReturn => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [rawData, setRawData] = useState<AnalysisSummaryResponse | null>(null);
-  const [parsedSummary, setParsedSummary] = useState<ParsedSummary | null>(
-    null,
-  );
-  const [aiInsights, setAiInsights] = useState<AIInsightsResponse | null>(null);
+  const {
+    cachedFileName,
+    rawData,
+    parsedSummary,
+    aiInsights,
+    isLoading,
+    error,
+    setAnalysisData,
+    setLoading,
+    setError,
+  } = useAnalysisStore();
 
   const parseSummaryData = useCallback(
     (data: AnalysisSummaryResponse): ParsedSummary => {
       const columns = Object.keys(data.metadata);
       const columnCount = columns.length;
 
-      // Get row count from the first column's count stat
       const firstColSummary = Object.values(data.summary)[0];
       const rowCount = firstColSummary?.count || 0;
 
-      // Calculate missing values
       const missingValuesCounts: Record<string, number> = {};
       let totalMissing = 0;
       columns.forEach((col) => {
@@ -41,7 +43,6 @@ export const useSummaryAnalysis = (
       const totalMissingPercentage =
         totalCells > 0 ? (totalMissing / totalCells) * 100 : 0;
 
-      // Extract numeric column statistics
       const numericStats = columns
         .filter((col) => {
           const stats = data.summary[col];
@@ -72,6 +73,8 @@ export const useSummaryAnalysis = (
         missingValuesCounts,
         totalMissingPercentage,
         numericStats,
+        memoryUsageMb: data.memory_usage_mb || 0,
+        headRows: data.head_rows || [],
       };
     },
     [],
@@ -84,11 +87,14 @@ export const useSummaryAnalysis = (
         return;
       }
 
-      setIsLoading(true);
+      if (cachedFileName === filename && rawData && parsedSummary && aiInsights) {
+        return;
+      }
+
+      setLoading(true);
       setError(null);
 
       try {
-        // Fetch both summary and AI insights in parallel
         const [summaryData, insightsData] = await Promise.all([
           analysisApiService.getAnalysisSummary(filename, signal),
           analysisApiService.getAIInsights(filename, signal),
@@ -96,9 +102,12 @@ export const useSummaryAnalysis = (
 
         if (signal?.aborted) return;
 
-        setRawData(summaryData);
-        setParsedSummary(parseSummaryData(summaryData));
-        setAiInsights(insightsData);
+        const parsed = parseSummaryData(summaryData);
+        setAnalysisData({
+          rawData: summaryData,
+          parsedSummary: parsed,
+          aiInsights: insightsData,
+        });
       } catch (err) {
         if (axios.isAxiosError(err) && err.name === "CanceledError") {
           return;
@@ -108,11 +117,11 @@ export const useSummaryAnalysis = (
         setError(errorMessage);
       } finally {
         if (!signal?.aborted) {
-          setIsLoading(false);
+          setLoading(false);
         }
       }
     },
-    [filename, parseSummaryData],
+    [filename, cachedFileName, rawData, parsedSummary, aiInsights, parseSummaryData, setAnalysisData, setLoading, setError],
   );
 
   useEffect(() => {

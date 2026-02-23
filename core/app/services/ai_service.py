@@ -88,9 +88,15 @@ def analyze_file(file_path: str) -> dict:
         metadata = extract_metadata(df)
         summary = generate_statistical_summary(df)
 
+        memory_usage_mb = float(df.memory_usage(deep=True).sum() / (1024 * 1024))
+        head_df = df.head(100).replace({np.nan: None})
+        head_rows = head_df.to_dict(orient="records")
+
         return {
             "metadata": metadata,
-            "summary": summary
+            "summary": summary,
+            "memory_usage_mb": round(memory_usage_mb, 2),
+            "head_rows": head_rows
         }
 
     except Exception as e:

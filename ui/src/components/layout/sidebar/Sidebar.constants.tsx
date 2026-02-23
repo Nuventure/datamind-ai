@@ -1,8 +1,7 @@
-import { Cloud, BarChart3, Workflow, AlertTriangle } from "lucide-react";
+import { Cloud, BarChart3, FileText } from "lucide-react";
 
 export const NAV_ITEMS = [
   { name: "Upload", icon: Cloud, path: "/" },
-  { name: "Analytics", icon: BarChart3, path: "/analytics" },
-  { name: "Connections", icon: Workflow, path: "/connections" },
-  { name: "Alerts", icon: AlertTriangle, path: "/alerts" },
+  { name: "Summary", icon: FileText, path: "/summary" },
+  { name: "Analysis", icon: BarChart3, path: "/analysis" },
 ] as const;

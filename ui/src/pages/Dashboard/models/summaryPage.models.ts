@@ -18,6 +18,8 @@ export interface ColumnSummary {
 export interface AnalysisSummaryResponse {
   metadata: Record<string, string>;
   summary: Record<string, ColumnSummary>;
+  memory_usage_mb?: number;
+  head_rows?: Record<string, unknown>[];
 }
 
 export interface NumericStats {
@@ -37,6 +39,8 @@ export interface ParsedSummary {
   missingValuesCounts: Record<string, number>;
   totalMissingPercentage: number;
   numericStats: NumericStats[];
+  memoryUsageMb: number;
+  headRows: Record<string, unknown>[];
 }
 
 // AI Insights Response Types
